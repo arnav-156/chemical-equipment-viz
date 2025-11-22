@@ -53,24 +53,54 @@ def test_get_dataset(token, dataset_id):
     print(f"Summary: {json.dumps(data['summary'], indent=2)}")
 
 def test_get_summary(token, dataset_id):
-    """Test get summary"""
+    """Test get summary with min/max values"""
     print(f"\n=== Testing Get Summary {dataset_id} ===")
     headers = {'Authorization': f'Token {token}'}
     response = requests.get(f'{BASE_URL}/datasets/{dataset_id}/summary/', headers=headers)
     print(f"Status: {response.status_code}")
-    print(f"Response: {json.dumps(response.json(), indent=2)}")
+    summary = response.json()
+    print(f"Response: {json.dumps(summary, indent=2)}")
+    
+    # Verify min/max values are present
+    if 'min_flowrate' in summary and 'max_flowrate' in summary:
+        print("\n✅ Min/Max values included!")
+        print(f"Flowrate range: {summary['min_flowrate']:.2f} - {summary['max_flowrate']:.2f}")
+        print(f"Pressure range: {summary['min_pressure']:.2f} - {summary['max_pressure']:.2f}")
+        print(f"Temperature range: {summary['min_temperature']:.2f} - {summary['max_temperature']:.2f}")
+    else:
+        print("\n⚠️ Min/Max values not found")
 
 def test_download_report(token, dataset_id):
-    """Test PDF report generation"""
-    print(f"\n=== Testing PDF Report {dataset_id} ===")
+    """Test PDF report generation with charts"""
+    print(f"\n=== Testing PDF Report with Charts {dataset_id} ===")
     headers = {'Authorization': f'Token {token}'}
+    
+    # First request - should generate PDF
+    print("First request (generating PDF)...")
+    import time
+    start_time = time.time()
     response = requests.get(f'{BASE_URL}/datasets/{dataset_id}/report/', headers=headers)
+    first_time = time.time() - start_time
     print(f"Status: {response.status_code}")
+    print(f"Time taken: {first_time:.2f} seconds")
     
     if response.status_code == 200:
         with open('test_report.pdf', 'wb') as f:
             f.write(response.content)
-        print("PDF saved as test_report.pdf")
+        print("✅ PDF saved as test_report.pdf")
+        print(f"PDF size: {len(response.content)} bytes")
+        
+        # Second request - should use cache
+        print("\nSecond request (should use cache)...")
+        start_time = time.time()
+        response2 = requests.get(f'{BASE_URL}/datasets/{dataset_id}/report/', headers=headers)
+        second_time = time.time() - start_time
+        print(f"Time taken: {second_time:.2f} seconds")
+        
+        if second_time < first_time:
+            print(f"✅ Cache working! {first_time/second_time:.1f}x faster")
+        else:
+            print("⚠️ Cache may not be working")
 
 if __name__ == '__main__':
     try:

@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.core.cache import cache
 from .models import Dataset, Equipment
 from .serializers import DatasetSerializer, DatasetListSerializer, EquipmentSerializer
 import pandas as pd
@@ -13,8 +14,11 @@ import io
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.units import inch
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import matplotlib.pyplot as plt
 
 
 class DatasetViewSet(viewsets.ModelViewSet):
@@ -85,6 +89,12 @@ class DatasetViewSet(viewsets.ModelViewSet):
                 'avg_flowrate': float(df['Flowrate'].mean()),
                 'avg_pressure': float(df['Pressure'].mean()),
                 'avg_temperature': float(df['Temperature'].mean()),
+                'min_flowrate': float(df['Flowrate'].min()),
+                'max_flowrate': float(df['Flowrate'].max()),
+                'min_pressure': float(df['Pressure'].min()),
+                'max_pressure': float(df['Pressure'].max()),
+                'min_temperature': float(df['Temperature'].min()),
+                'max_temperature': float(df['Temperature'].max()),
                 'type_distribution': df['Type'].value_counts().to_dict()
             }
             
@@ -110,8 +120,18 @@ class DatasetViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def report(self, request, pk=None):
-        """Generate PDF report for a dataset"""
+        """Generate PDF report for a dataset with charts and caching"""
         dataset = self.get_object()
+        
+        # Check cache first
+        cache_key = f'pdf_report_{dataset.id}_{dataset.upload_date.timestamp()}'
+        cached_pdf = cache.get(cache_key)
+        
+        if cached_pdf:
+            response = HttpResponse(cached_pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{dataset.file_name}_report.pdf"'
+            return response
+        
         equipment_items = dataset.equipment_items.all()
         summary = dataset.get_summary()
         
@@ -126,18 +146,100 @@ class DatasetViewSet(viewsets.ModelViewSet):
         elements.append(title)
         elements.append(Spacer(1, 0.3*inch))
         
-        # Summary section
+        # Summary section with min/max
         summary_text = f"""
         <b>Summary Statistics</b><br/>
         Total Equipment: {summary.get('total_count', 0)}<br/>
-        Average Flowrate: {summary.get('avg_flowrate', 0):.2f}<br/>
-        Average Pressure: {summary.get('avg_pressure', 0):.2f}<br/>
-        Average Temperature: {summary.get('avg_temperature', 0):.2f}<br/>
+        <br/>
+        <b>Flowrate:</b> Avg: {summary.get('avg_flowrate', 0):.2f}, 
+        Min: {summary.get('min_flowrate', 0):.2f}, 
+        Max: {summary.get('max_flowrate', 0):.2f}<br/>
+        <b>Pressure:</b> Avg: {summary.get('avg_pressure', 0):.2f}, 
+        Min: {summary.get('min_pressure', 0):.2f}, 
+        Max: {summary.get('max_pressure', 0):.2f}<br/>
+        <b>Temperature:</b> Avg: {summary.get('avg_temperature', 0):.2f}, 
+        Min: {summary.get('min_temperature', 0):.2f}, 
+        Max: {summary.get('max_temperature', 0):.2f}<br/>
         """
         elements.append(Paragraph(summary_text, styles['Normal']))
         elements.append(Spacer(1, 0.3*inch))
         
+        # Generate charts
+        try:
+            # Chart 1: Equipment Type Distribution
+            type_dist = summary.get('type_distribution', {})
+            if type_dist:
+                fig, ax = plt.subplots(figsize=(6, 4))
+                types = list(type_dist.keys())
+                counts = list(type_dist.values())
+                ax.bar(types, counts, color='steelblue')
+                ax.set_xlabel('Equipment Type')
+                ax.set_ylabel('Count')
+                ax.set_title('Equipment Type Distribution')
+                plt.xticks(rotation=45, ha='right')
+                plt.tight_layout()
+                
+                # Save chart to buffer
+                chart_buffer = io.BytesIO()
+                plt.savefig(chart_buffer, format='png', dpi=150, bbox_inches='tight')
+                chart_buffer.seek(0)
+                plt.close()
+                
+                # Add chart to PDF
+                chart_image = Image(chart_buffer, width=5*inch, height=3.5*inch)
+                elements.append(Paragraph("<b>Equipment Type Distribution</b>", styles['Heading2']))
+                elements.append(Spacer(1, 0.1*inch))
+                elements.append(chart_image)
+                elements.append(Spacer(1, 0.3*inch))
+            
+            # Chart 2: Parameter Comparison
+            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(10, 3))
+            
+            # Flowrate
+            flowrates = [item.flowrate for item in equipment_items]
+            ax1.hist(flowrates, bins=10, color='skyblue', edgecolor='black')
+            ax1.set_xlabel('Flowrate')
+            ax1.set_ylabel('Frequency')
+            ax1.set_title('Flowrate Distribution')
+            
+            # Pressure
+            pressures = [item.pressure for item in equipment_items]
+            ax2.hist(pressures, bins=10, color='lightcoral', edgecolor='black')
+            ax2.set_xlabel('Pressure')
+            ax2.set_ylabel('Frequency')
+            ax2.set_title('Pressure Distribution')
+            
+            # Temperature
+            temperatures = [item.temperature for item in equipment_items]
+            ax3.hist(temperatures, bins=10, color='lightgreen', edgecolor='black')
+            ax3.set_xlabel('Temperature')
+            ax3.set_ylabel('Frequency')
+            ax3.set_title('Temperature Distribution')
+            
+            plt.tight_layout()
+            
+            # Save chart to buffer
+            chart_buffer2 = io.BytesIO()
+            plt.savefig(chart_buffer2, format='png', dpi=150, bbox_inches='tight')
+            chart_buffer2.seek(0)
+            plt.close()
+            
+            # Add chart to PDF
+            chart_image2 = Image(chart_buffer2, width=7*inch, height=2.5*inch)
+            elements.append(Paragraph("<b>Parameter Distributions</b>", styles['Heading2']))
+            elements.append(Spacer(1, 0.1*inch))
+            elements.append(chart_image2)
+            elements.append(Spacer(1, 0.3*inch))
+            
+        except Exception as e:
+            # If chart generation fails, continue without charts
+            elements.append(Paragraph(f"<i>Chart generation skipped: {str(e)}</i>", styles['Normal']))
+            elements.append(Spacer(1, 0.2*inch))
+        
         # Equipment table
+        elements.append(Paragraph("<b>Equipment Details</b>", styles['Heading2']))
+        elements.append(Spacer(1, 0.1*inch))
+        
         data = [['Name', 'Type', 'Flowrate', 'Pressure', 'Temperature']]
         for item in equipment_items:
             data.append([
@@ -154,17 +256,23 @@ class DatasetViewSet(viewsets.ModelViewSet):
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
         ]))
         
         elements.append(table)
         doc.build(elements)
         
         buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/pdf')
+        pdf_content = buffer.read()
+        
+        # Cache the PDF for 1 hour
+        cache.set(cache_key, pdf_content, 3600)
+        
+        response = HttpResponse(pdf_content, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{dataset.file_name}_report.pdf"'
         return response
 
