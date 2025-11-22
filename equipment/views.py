@@ -10,6 +10,7 @@ from django.core.cache import cache
 from .models import Dataset, Equipment, AlertRule, AlertHistory
 from .serializers import DatasetSerializer, DatasetListSerializer, EquipmentSerializer, AlertRuleSerializer, AlertHistorySerializer
 from .alerts import AlertManager, check_anomalies
+from .anomaly_detection import AnomalyDetector, get_dataset_health_summary
 import pandas as pd
 import io
 from reportlab.lib.pagesizes import letter
@@ -125,6 +126,52 @@ class DatasetViewSet(viewsets.ModelViewSet):
         """Get analytics summary for a dataset"""
         dataset = self.get_object()
         return Response(dataset.get_summary())
+    
+    @action(detail=True, methods=['get'])
+    def anomalies(self, request, pk=None):
+        """Detect anomalies in dataset using ML"""
+        dataset = self.get_object()
+        equipment_items = list(dataset.equipment_items.all())
+        
+        if not equipment_items:
+            return Response({'error': 'No equipment data found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        detector = AnomalyDetector()
+        anomalies = detector.detect_anomalies(equipment_items)
+        
+        return Response({
+            'dataset_id': dataset.id,
+            'dataset_name': dataset.file_name,
+            'total_equipment': len(equipment_items),
+            'anomalies': anomalies,
+            'health_summary': get_dataset_health_summary(dataset)
+        })
+    
+    @action(detail=True, methods=['get'])
+    def health(self, request, pk=None):
+        """Get health summary for dataset"""
+        dataset = self.get_object()
+        health_summary = get_dataset_health_summary(dataset)
+        return Response(health_summary)
+    
+    @action(detail=False, methods=['get'])
+    def trends(self, request):
+        """Analyze trends across recent datasets"""
+        datasets = Dataset.objects.all()[:3]
+        
+        if len(datasets) < 2:
+            return Response({
+                'message': 'Need at least 2 datasets for trend analysis',
+                'trends': None
+            })
+        
+        detector = AnomalyDetector()
+        trends = detector.analyze_trends(datasets)
+        
+        return Response({
+            'datasets_analyzed': len(datasets),
+            'trends': trends
+        })
     
     @action(detail=True, methods=['get'])
     def report(self, request, pk=None):
