@@ -7,8 +7,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.core.cache import cache
-from .models import Dataset, Equipment
-from .serializers import DatasetSerializer, DatasetListSerializer, EquipmentSerializer
+from .models import Dataset, Equipment, AlertRule, AlertHistory
+from .serializers import DatasetSerializer, DatasetListSerializer, EquipmentSerializer, AlertRuleSerializer, AlertHistorySerializer
+from .alerts import AlertManager, check_anomalies
 import pandas as pd
 import io
 from reportlab.lib.pagesizes import letter
@@ -101,13 +102,20 @@ class DatasetViewSet(viewsets.ModelViewSet):
             dataset.set_summary(summary)
             dataset.save()
             
+            # Check for alerts
+            alert_manager = AlertManager()
+            alerts = alert_manager.check_dataset(dataset)
+            
             # Cleanup old datasets (keep last 5)
             old_datasets = Dataset.objects.all()[5:]
             for old_dataset in old_datasets:
                 old_dataset.delete()
             
             serializer = DatasetSerializer(dataset)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response_data = serializer.data
+            response_data['alerts_triggered'] = len(alerts)
+            
+            return Response(response_data, status=status.HTTP_201_CREATED)
         
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -333,3 +341,60 @@ def register_view(request):
         'user_id': user.id,
         'username': user.username
     }, status=status.HTTP_201_CREATED)
+
+
+
+class AlertRuleViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing alert rules"""
+    queryset = AlertRule.objects.all()
+    serializer_class = AlertRuleSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Filter active rules"""
+        queryset = AlertRule.objects.all()
+        active_only = self.request.query_params.get('active', None)
+        if active_only == 'true':
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+
+class AlertHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing alert history"""
+    queryset = AlertHistory.objects.all()
+    serializer_class = AlertHistorySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Filter alerts"""
+        queryset = AlertHistory.objects.all()
+        
+        # Filter by severity
+        severity = self.request.query_params.get('severity', None)
+        if severity:
+            queryset = queryset.filter(severity=severity)
+        
+        # Filter by acknowledged status
+        acknowledged = self.request.query_params.get('acknowledged', None)
+        if acknowledged == 'false':
+            queryset = queryset.filter(acknowledged=False)
+        
+        # Limit to recent alerts
+        limit = self.request.query_params.get('limit', 50)
+        queryset = queryset[:int(limit)]
+        
+        return queryset
+    
+    @action(detail=True, methods=['post'])
+    def acknowledge(self, request, pk=None):
+        """Acknowledge an alert"""
+        alert = self.get_object()
+        alert.acknowledged = True
+        alert.acknowledged_at = timezone.now()
+        alert.save()
+        
+        serializer = self.get_serializer(alert)
+        return Response(serializer.data)
+
+
+from django.utils import timezone
