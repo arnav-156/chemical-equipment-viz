@@ -1,0 +1,412 @@
+.customizable-dashboard {
+  padding: 20px 0;
+}
+
+/* Toolbar */
+.dashboard-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toolbar-left h3 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.edit-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 10px;
+}
+
+.toolbar-btn {
+  padding: 8px 16px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.toolbar-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
+.toolbar-btn.active {
+  background: #667eea;
+  color: white;
+}
+
+/* Widget Selector */
+.widget-selector {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.widget-selector h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.widget-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.widget-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5f7fa;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.widget-toggle:hover {
+  background: #e8ebff;
+}
+
+.widget-toggle input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+  position: relative;
+}
+
+.dashboard-widget {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.dashboard-widget:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: move;
+}
+
+.widget-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.widget-content {
+  padding: 20px;
+  height: calc(100% - 48px);
+  overflow: auto;
+}
+
+/* Stat Card Widget */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-top: 4px solid;
+  padding-top: 15px !important;
+}
+
+.stat-icon {
+  font-size: 48px;
+}
+
+.stat-info h4 {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.stat-range {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Type Distribution Widget */
+.type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.type-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.type-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.type-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.type-count {
+  color: #666;
+  font-size: 13px;
+}
+
+.type-bar {
+  grid-column: 1 / 2;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s;
+}
+
+.type-percent {
+  grid-column: 2 / 3;
+  font-weight: 600;
+  color: #667eea;
+  font-size: 14px;
+}
+
+/* Quick Actions Widget */
+.quick-actions h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: #f5f7fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+  color: #333;
+}
+
+.action-btn:hover {
+  background: #e8ebff;
+  border-color: #667eea;
+  transform: translateX(5px);
+}
+
+.action-icon {
+  font-size: 20px;
+}
+
+/* Recent Activity Widget */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.activity-icon {
+  font-size: 24px;
+}
+
+.activity-info {
+  flex: 1;
+}
+
+.activity-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Data Quality Widget */
+.quality-score {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.quality-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.quality-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+.quality-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quality-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.quality-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+}
+
+.quality-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
+
+.quality-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #45a049 100%);
+  transition: width 0.3s;
+}
+
+/* React Grid Layout Overrides */
+.react-grid-item.react-grid-placeholder {
+  background: rgba(102, 126, 234, 0.2);
+  border: 2px dashed #667eea;
+  border-radius: 10px;
+}
+
+.react-grid-item.resizing {
+  opacity: 0.9;
+}
+
+.react-grid-item > .react-resizable-handle {
+  background-image: none;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: '⋰';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  color: #667eea;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-toolbar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .widget-toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .quality-score {
+    flex-direction: column;
+  }
+}

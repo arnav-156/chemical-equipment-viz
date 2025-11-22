@@ -7,6 +7,7 @@ import DatasetList from '../components/DatasetList';
 import SummaryCards from '../components/SummaryCards';
 import Charts from '../components/Charts';
 import DataTable from '../components/DataTable';
+import CustomizableDashboard from '../components/CustomizableDashboard';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
+  const [viewMode, setViewMode] = useState('standard'); // 'standard' or 'customizable'
   const navigate = useNavigate();
   const user = getUser();
 
@@ -105,6 +107,12 @@ const Dashboard = () => {
         <div className="header-content">
           <h1>🧪 Chemical Equipment Visualizer</h1>
           <div className="header-actions">
+            <button
+              onClick={() => setViewMode(viewMode === 'standard' ? 'customizable' : 'standard')}
+              className="btn-view-toggle"
+            >
+              {viewMode === 'standard' ? '🎨 Customizable View' : '📊 Standard View'}
+            </button>
             <span className="user-info">Welcome, {user?.username}!</span>
             <button onClick={handleLogout} className="btn-logout">
               Logout
@@ -133,24 +141,36 @@ const Dashboard = () => {
         {/* Dataset Details */}
         {selectedDataset && (
           <>
-            {/* Download Report Button */}
-            <div className="report-section">
-              <button onClick={handleDownloadReport} className="btn-download-report">
-                📄 Download PDF Report
-              </button>
-            </div>
+            {viewMode === 'customizable' ? (
+              /* Customizable Dashboard View */
+              <CustomizableDashboard
+                summary={summary}
+                equipmentData={selectedDataset.equipment_items}
+                onDownloadReport={handleDownloadReport}
+              />
+            ) : (
+              /* Standard View */
+              <>
+                {/* Download Report Button */}
+                <div className="report-section">
+                  <button onClick={handleDownloadReport} className="btn-download-report">
+                    📄 Download PDF Report
+                  </button>
+                </div>
 
-            {/* Summary Cards */}
-            <SummaryCards summary={summary} />
+                {/* Summary Cards */}
+                <SummaryCards summary={summary} />
 
-            {/* Charts */}
-            <Charts
-              summary={summary}
-              equipmentData={selectedDataset.equipment_items}
-            />
+                {/* Charts */}
+                <Charts
+                  summary={summary}
+                  equipmentData={selectedDataset.equipment_items}
+                />
 
-            {/* Data Table */}
-            <DataTable equipmentData={selectedDataset.equipment_items} />
+                {/* Data Table */}
+                <DataTable equipmentData={selectedDataset.equipment_items} />
+              </>
+            )}
           </>
         )}
 
