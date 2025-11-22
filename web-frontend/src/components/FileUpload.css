@@ -1,0 +1,153 @@
+.file-upload-container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.file-upload-container h2 {
+  margin-top: 0;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #fafafa;
+}
+
+.drop-zone:hover {
+  border-color: #667eea;
+  background-color: #f0f0ff;
+}
+
+.drop-zone.drag-active {
+  border-color: #667eea;
+  background-color: #e8ebff;
+}
+
+.drop-zone-content {
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.drop-zone p {
+  margin: 10px 0;
+  color: #666;
+}
+
+.or-text {
+  color: #999;
+  font-size: 14px;
+}
+
+.btn-select {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  pointer-events: all;
+}
+
+.btn-select:hover {
+  background-color: #5568d3;
+}
+
+.file-info {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #e8f5e9;
+  border-radius: 5px;
+  border-left: 4px solid #4caf50;
+}
+
+.file-info p {
+  margin: 0;
+  color: #2e7d32;
+}
+
+.progress-container {
+  margin: 20px 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s;
+}
+
+.progress-container p {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.btn-upload {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-top: 15px;
+}
+
+.btn-upload:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn-upload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.csv-format-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff3e0;
+  border-radius: 5px;
+  border-left: 4px solid #ff9800;
+}
+
+.csv-format-info p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #e65100;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 15px 0;
+  text-align: center;
+}
