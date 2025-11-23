@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "web-frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "web-frontend/build"
+      }
+    },
+    {
+      "src": "manage.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "manage.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "web-frontend/build/$1"
+    }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "chemical_equipment_viz.settings"
+  }
+}
