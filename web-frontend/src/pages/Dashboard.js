@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { datasetAPI, authAPI } from '../services/api';
 import { removeAuthToken, getUser } from '../utils/auth';
+import PillNav from '../components/PillNav';
 import FileUpload from '../components/FileUpload';
 import DatasetList from '../components/DatasetList';
 import SummaryCards from '../components/SummaryCards';
 import Charts from '../components/Charts';
 import DataTable from '../components/DataTable';
 import CustomizableDashboard from '../components/CustomizableDashboard';
+import EquipmentNetworkGraph from '../components/EquipmentNetworkGraph';
+import ComparisonMode from '../components/ComparisonMode';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -17,11 +20,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [viewMode, setViewMode] = useState('standard'); // 'standard' or 'customizable'
+  const [showComparison, setShowComparison] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const user = getUser();
 
   useEffect(() => {
     loadDatasets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadDatasets = async () => {
@@ -94,29 +100,48 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading...</p>
+          <p>Waking up the machines...</p>
         </div>
       </div>
     );
   }
 
+  const currentPath = location.pathname;
+
+  const handleViewToggle = (e) => {
+    e.preventDefault();
+    setViewMode(viewMode === 'standard' ? 'customizable' : 'standard');
+  };
+
+  const navItems = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Features', href: '/features' },
+    { 
+      label: viewMode === 'standard' ? '🎨 Custom' : '📊 Standard', 
+      href: '#', 
+      onClick: handleViewToggle 
+    },
+    { label: 'Logout', href: '#', onClick: handleLogout }
+  ];
+
   return (
     <div className="dashboard-container">
+      {/* Pill Navigation */}
+      <PillNav
+        items={navItems}
+        activeHref={currentPath}
+        baseColor="#00FFA3"
+        pillColor="#1E2749"
+        hoveredPillTextColor="#0A0E27"
+        pillTextColor="#00FFA3"
+      />
+
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-content">
           <h1>🧪 Chemical Equipment Visualizer</h1>
           <div className="header-actions">
-            <button
-              onClick={() => setViewMode(viewMode === 'standard' ? 'customizable' : 'standard')}
-              className="btn-view-toggle"
-            >
-              {viewMode === 'standard' ? '🎨 Customizable View' : '📊 Standard View'}
-            </button>
-            <span className="user-info">Welcome, {user?.username}!</span>
-            <button onClick={handleLogout} className="btn-logout">
-              Logout
-            </button>
+            <span className="user-info">Welcome, {user?.username}! 👋</span>
           </div>
         </div>
       </header>
@@ -137,6 +162,19 @@ const Dashboard = () => {
           onSelectDataset={handleSelectDataset}
           selectedDatasetId={selectedDataset?.id}
         />
+
+        {/* Comparison Mode Button */}
+        {datasets.length >= 2 && (
+          <div className="comparison-trigger">
+            <button 
+              className="btn-comparison"
+              onClick={() => setShowComparison(true)}
+            >
+              ⚖️ Compare Datasets
+            </button>
+            <p className="comparison-hint">Compare multiple datasets side-by-side</p>
+          </div>
+        )}
 
         {/* Dataset Details */}
         {selectedDataset && (
@@ -160,6 +198,9 @@ const Dashboard = () => {
 
                 {/* Summary Cards */}
                 <SummaryCards summary={summary} />
+
+                {/* Equipment Network Graph */}
+                <EquipmentNetworkGraph equipmentData={selectedDataset.equipment_items} />
 
                 {/* Charts */}
                 <Charts
@@ -186,6 +227,14 @@ const Dashboard = () => {
       <footer className="dashboard-footer">
         <p>© 2025 Chemical Equipment Visualizer | Built with React & Django</p>
       </footer>
+
+      {/* Comparison Mode Modal */}
+      {showComparison && (
+        <ComparisonMode 
+          datasets={datasets}
+          onClose={() => setShowComparison(false)}
+        />
+      )}
     </div>
   );
 };

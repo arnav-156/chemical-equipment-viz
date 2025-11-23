@@ -1,0 +1,87 @@
+.install-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  background: linear-gradient(135deg, #00FFA3 0%, #00D4FF 100%);
+  color: #0A0E27;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 24px;
+  
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 255, 163, 0.3);
+  
+  transition: all 0.3s ease;
+  animation: slideUp 0.5s ease, pulse 2s ease-in-out infinite;
+}
+
+.install-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 255, 163, 0.5);
+}
+
+.install-button:active {
+  transform: translateY(-1px);
+}
+
+.install-icon {
+  font-size: 20px;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.install-text {
+  white-space: nowrap;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 255, 163, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(0, 255, 163, 0.6);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .install-button {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .install-icon {
+    font-size: 18px;
+  }
+}

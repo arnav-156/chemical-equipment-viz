@@ -1,0 +1,96 @@
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+}
+
+.cursor-core {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #00FFA3;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(0, 255, 163, 0.8);
+}
+
+.cursor-ring {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #00FFA3;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.custom-cursor-pointer .cursor-ring {
+  width: 48px;
+  height: 48px;
+  border-color: #FF6B9D;
+}
+
+.custom-cursor-upload .cursor-ring {
+  width: 56px;
+  height: 56px;
+  border-color: #FFD93D;
+  animation: pulse-ring 1s ease-in-out infinite;
+}
+
+.cursor-icon {
+  position: absolute;
+  font-size: 20px;
+  color: #FFD93D;
+  transform: translate(-50%, -50%);
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+.custom-cursor-crosshair .crosshair-h,
+.custom-cursor-crosshair .crosshair-v {
+  position: absolute;
+  background: #00FFA3;
+  opacity: 0.6;
+}
+
+.custom-cursor-crosshair .crosshair-h {
+  width: 20px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.custom-cursor-crosshair .crosshair-v {
+  width: 1px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-5px);
+  }
+}
+
+/* Show default cursor on mobile */
+@media (max-width: 768px) {
+  .custom-cursor {
+    display: none;
+  }
+}

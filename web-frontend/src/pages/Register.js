@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { setAuthToken, setUser } from '../utils/auth';
+import AuroraSimple from '../components/AuroraSimple';
 import './Login.css';
 
 const Register = () => {
@@ -43,6 +44,9 @@ const Register = () => {
 
   return (
     <div className="login-container">
+      <div className="aurora-background">
+        <AuroraSimple colorStops={["#00FFA3", "#FF6B9D", "#FFD93D"]} />
+      </div>
       <div className="login-box">
         <h1>🧪 Chemical Equipment Visualizer</h1>
         <h2>Register</h2>

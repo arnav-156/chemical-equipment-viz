@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { datasetAPI } from '../services/api';
+import ParticleExplosion from './ParticleExplosion';
 import './FileUpload.css';
 
 const FileUpload = ({ onUploadSuccess }) => {
@@ -8,6 +9,7 @@ const FileUpload = ({ onUploadSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [showExplosion, setShowExplosion] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleDrag = (e) => {
@@ -34,7 +36,7 @@ const FileUpload = ({ onUploadSuccess }) => {
     setError('');
 
     if (!selectedFile.name.endsWith('.csv')) {
-      setError('Please select a CSV file');
+      setError('Hmm, that doesn\'t look like a CSV file. Try again? 🤔');
       return;
     }
 
@@ -43,7 +45,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a file');
+      setError('No file selected! Pick one first 📁');
       return;
     }
 
@@ -57,25 +59,35 @@ const FileUpload = ({ onUploadSuccess }) => {
         setUploadProgress(progress);
       });
 
-      setFile(null);
-      setUploadProgress(0);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      // Trigger particle explosion!
+      setShowExplosion(true);
+      
+      setTimeout(() => {
+        setFile(null);
+        setUploadProgress(0);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
 
-      if (onUploadSuccess) {
-        onUploadSuccess(data);
-      }
+        if (onUploadSuccess) {
+          onUploadSuccess(data);
+        }
+      }, 500);
     } catch (err) {
-      setError(err.response?.data?.error || 'Upload failed. Please try again.');
+      setError(err.response?.data?.error || 'Oops! Something went wrong. Give it another shot? 💪');
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="file-upload-container">
-      <h2>📤 Upload CSV File</h2>
+    <>
+      <ParticleExplosion 
+        trigger={showExplosion}
+        onComplete={() => setShowExplosion(false)}
+      />
+      <div className="file-upload-container">
+        <h2>📊 Upload Equipment Data</h2>
 
       <div
         className={`drop-zone ${dragActive ? 'drag-active' : ''}`}
@@ -95,11 +107,12 @@ const FileUpload = ({ onUploadSuccess }) => {
 
         <div className="drop-zone-content">
           <span className="upload-icon">📁</span>
-          <p>Drag and drop CSV file here</p>
+          <p>Drag and drop your CSV here</p>
           <p className="or-text">or</p>
           <button type="button" className="btn-select">
-            Select File
+            Browse Files
           </button>
+          <p className="hint-text">Feed me some data! 🤖</p>
         </div>
       </div>
 
@@ -127,7 +140,7 @@ const FileUpload = ({ onUploadSuccess }) => {
         onClick={handleUpload}
         disabled={!file || uploading}
       >
-        {uploading ? 'Uploading...' : 'Upload and Analyze'}
+        {uploading ? 'Crunching numbers...' : '🚀 Upload and Analyze'}
       </button>
 
       <div className="csv-format-info">
@@ -135,6 +148,7 @@ const FileUpload = ({ onUploadSuccess }) => {
         <p>Equipment Name, Type, Flowrate, Pressure, Temperature</p>
       </div>
     </div>
+    </>
   );
 };
 
